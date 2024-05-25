@@ -5,7 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { updateOrderStatusByOrderId } from "@/actions/supabase/supabase-db";
 import LoaderEl from "@/components/LoaderEl";
 import { Button } from "@/components/ui/button";
@@ -20,7 +27,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ORDER_STATUS } from "@/lib/constant";
 import { PaperPlaneIcon } from "@radix-ui/react-icons";
-import { X } from "lucide-react";
+import { MoreHorizontal, MoreVertical, X } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
@@ -35,6 +42,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
+import firstLetterCapital from "@/lib/utils/first-letter-capital";
 
 export type OrderStatusType = (typeof ORDER_STATUS)[number];
 export type OrderStatusWithoutAll = Exclude<OrderStatusType, "ALL">;
@@ -76,20 +84,47 @@ export default function RefundCard({ orderId, status }: RefundCardProps) {
     });
   }
 
-  function handleCancelOrder(type: "PENDING" | "CANCELED") {
+  function handleOrderAction(type: "PENDING" | "CANCELED") {
     setCancelOrRefund(type);
     startTransition(async () => {
       await updateOrderStatusByOrderId(orderId, type);
       form.reset();
       router.refresh();
-      toast.success("Order status has been canceled!");
+      toast.success(
+        `Order status has been ${
+          type === "PENDING" ? "reverted" : type.toLocaleLowerCase()
+        }.`
+      );
     });
   }
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="justify-between flex-row">
         <CardTitle>Refund</CardTitle>
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <MoreVertical size={16} />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem
+              disabled={isPending && cancelOrRefund === "CANCELED"}
+              onClick={() => handleOrderAction("CANCELED")}
+            >
+              Cancel Order
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={
+                (isPending && cancelOrRefund === "PENDING") ||
+                status === "PENDING"
+              }
+              onClick={() => handleOrderAction("PENDING")}
+            >
+              {isPending && cancelOrRefund === "PENDING" && <LoaderEl />}
+              Revert
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </CardHeader>
       <CardContent>
         <Form {...form}>

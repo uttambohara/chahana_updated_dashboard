@@ -20,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className}`}>
         <ModalProvider>{children}</ModalProvider>
         <Toaster expand={true} position="top-right" />
       </body>

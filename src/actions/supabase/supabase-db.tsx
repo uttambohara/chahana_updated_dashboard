@@ -68,7 +68,6 @@ export async function createPayment(paymentObj: {
     .insert([{ ...paymentObj }])
     .select();
 
-  console.log(response);
   return JSON.stringify(response);
 }
 
@@ -135,6 +134,44 @@ export async function updateProductPublishedStatus(
   return JSON.stringify(response);
 }
 
+export async function updateCategory({
+  id,
+  name,
+  image_url,
+}: {
+  id: number;
+  name: string;
+  image_url: string;
+}) {
+  const supabase = supabaseServerClient();
+  const response = await supabase
+    .from("category")
+    .update({ name, image_url })
+    .match({ id });
+
+  return JSON.stringify(response);
+}
+
+export async function updateSubCategory({
+  id,
+  category_id,
+  name,
+  image_url,
+}: {
+  id: number;
+  category_id: number;
+  name: string;
+  image_url: string;
+}) {
+  const supabase = supabaseServerClient();
+  const response = await supabase
+    .from("sub_category")
+    .update({ name, image_url, category_id })
+    .match({ id });
+
+  return JSON.stringify(response);
+}
+
 export type OrderStatusType = (typeof ORDER_STATUS)[number];
 export type OrderStatusWithoutAll = Exclude<OrderStatusType, "ALL">;
 
@@ -157,8 +194,6 @@ export async function updateOrderStatusByOrderId(
       .from("payment")
       .delete()
       .eq("order_id", orderId);
-
-    console.log(payment);
   }
 
   return JSON.stringify(response);

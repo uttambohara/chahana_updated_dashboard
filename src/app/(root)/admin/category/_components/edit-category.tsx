@@ -4,8 +4,13 @@ import { useModal } from "@/providers/modal-provider";
 import { Edit2 } from "lucide-react";
 import React from "react";
 import CategoriesForm from "./category-form";
+import { Tables } from "@/types/supabase";
 
-export default function EditCategory() {
+interface EditCategoryProps {
+  category: Tables<"category"> & { product: Tables<"product">[] };
+}
+
+export default function EditCategory({ category }: EditCategoryProps) {
   const { setOpen } = useModal();
   return (
     <DropdownMenuItem
@@ -13,7 +18,7 @@ export default function EditCategory() {
       onClick={() =>
         setOpen(
           <CustomModal title={"Edit category"}>
-            <CategoriesForm />
+            <CategoriesForm category={category} />
           </CustomModal>
         )
       }

@@ -13,7 +13,6 @@ import {
   calculateSummary,
 } from "../../_utils/revenue-calculation";
 import DropDownAction from "../_components/DropdownAction";
-import ActionCard from "../_components/action-card";
 import CreateFulfillment from "../_components/create-fulfillment";
 import RefundCard from "../_components/refund-card";
 
@@ -37,7 +36,14 @@ export default async function IndividialOrder({
   const orderStatus = orderToDisplay.status;
 
   const product_order = orderToDisplay.order_product[0];
-  const orderProduct = orderToDisplay.order_product[0].product;
+  const orderProduct = orderToDisplay.order_product[0]?.product;
+  if (!product_order)
+    return (
+      <div className="h-screen">
+        order_product has not been created! This is created on the frontend as
+        soon as the user orders the product.
+      </div>
+    );
   const orderImage = JSON.parse(orderProduct?.productImgs as string)[0].image;
 
   //
@@ -331,17 +337,6 @@ export default async function IndividialOrder({
             orderId={orderToDisplay.id}
             status={orderToDisplay.status}
           />
-          <Card>
-            <CardHeader>
-              <CardTitle>Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ActionCard
-                orderId={orderToDisplay.id}
-                status={orderToDisplay.status}
-              />
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>

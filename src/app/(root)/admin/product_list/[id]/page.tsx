@@ -1,19 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { VENDOR_PRODUCT_PARAM } from "@/lib/constant";
-import { getProductById } from "@/lib/supabase-query";
-import { formatCurrencyToNPR } from "@/lib/utils/format-currency";
-import Image from "next/image";
-import Link from "next/link";
-import { notFound } from "next/navigation";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { VENDOR_PRODUCT_PARAM } from "@/lib/constant";
+import { getAllProductsForAdmin } from "@/lib/supabase-query";
+import { formatCurrencyToNPR } from "@/lib/utils/format-currency";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 export default async function IndividialProduct({
   params,
@@ -22,7 +21,7 @@ export default async function IndividialProduct({
 }) {
   const productId = Number(params.id);
 
-  const { product, error } = await getProductById(productId);
+  const { product, error } = await getAllProductsForAdmin(productId);
 
   if (error) {
     return JSON.stringify(error);
@@ -172,7 +171,7 @@ export default async function IndividialProduct({
           </Card>
           <Card className="h-[25rem]">
             <CardHeader>
-              <CardTitle>Sizes</CardTitle>
+              <CardTitle>Colors</CardTitle>
             </CardHeader>
             <CardContent className="space-y-8">
               <div>

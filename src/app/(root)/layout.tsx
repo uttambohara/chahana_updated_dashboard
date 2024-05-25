@@ -1,5 +1,7 @@
 import Header from "@/components/layout/Header";
 import NavSidebar from "@/components/layout/NavSidebar";
+import getUser from "@/lib/supabase-query";
+import { redirect } from "next/navigation";
 
 export default async function RootLayout({
   children,
@@ -7,13 +9,11 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex">
+    <div className="flex h-screen">
       <NavSidebar />
       <div className="flex flex-col flex-1">
         <Header />
-        <main className="bg-zinc-50 h-[calc(100svh-4rem)] overflow-y-auto">
-          {children}
-        </main>
+        <main className="bg-zinc-50 overflow-y-auto">{children}</main>
       </div>
     </div>
   );

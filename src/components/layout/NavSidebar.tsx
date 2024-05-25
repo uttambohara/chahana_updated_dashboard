@@ -15,7 +15,7 @@ export default async function NavSidebar() {
   if (user.role === "VENDOR") NavList = VendorNavList;
 
   return (
-    <div className="hidden lg:block lg:w-[280px] border border-zinc-100 h-screen shadow-sm">
+    <div className="hidden lg:block lg:w-[280px] border border-zinc-100  h-full">
       <div className="flex h-[60px] items-center border-b px-6">
         <Link className="flex items-center gap-2 font-semibold" href="#">
           <MountainIcon className="h-6 w-6" />
@@ -23,7 +23,7 @@ export default async function NavSidebar() {
         </Link>
       </div>
 
-      <nav className="grid items-start px-4 py-6 text-sm">
+      <nav className="px-4 py-6 text-sm h-full">
         {NavList.map((listItem) => {
           //...
           // If sublist has items

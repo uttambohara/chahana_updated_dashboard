@@ -12,6 +12,17 @@ export async function getProductById(productId: number) {
   return { product, error };
 }
 
+export async function getAllProductsForAdmin(productId: number) {
+  const supabase = supabaseServerClient();
+  let { data: product, error } = await supabase
+    .from("product")
+    .select(
+      "*, color(*), sizes(*), category(*), sub_category(*), product_color(*, color(*)), product_size(*, sizes(*))"
+    );
+
+  return { product, error };
+}
+
 export async function getOrderById(orderId: number) {
   const supabase = supabaseServerClient();
   let { data: order, error } = await supabase

@@ -3,6 +3,10 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
+        hostname: "utfs.io",
+        protocol: "https",
+      },
+      {
         hostname: "img.freepik.com",
         protocol: "https",
       },

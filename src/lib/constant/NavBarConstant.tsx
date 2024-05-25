@@ -15,7 +15,7 @@ export const AdminNavList = [
   {
     id: 1,
     item: "Home",
-    link: "/",
+    link: "/admin",
     icon: <HomeIcon size={18} />,
     subList: [],
   },
@@ -67,7 +67,7 @@ export const VendorNavList = [
   {
     id: 1,
     item: "Home",
-    link: "/",
+    link: "/vendor",
     icon: <HomeIcon size={18} />,
     subList: [],
   },

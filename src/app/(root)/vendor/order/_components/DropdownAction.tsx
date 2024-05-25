@@ -65,7 +65,7 @@ export default function DropDownAction({
   const { setOpen, setClose } = useModal();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  console.log(totalAmount, paid);
+
   const remainingAmount = totalAmount - paid;
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -97,7 +97,7 @@ export default function DropDownAction({
 
       const paymentJSON = await createPayment(paymentObj);
 
-      const { payment, error } = JSON.parse(paymentJSON);
+      const { error } = JSON.parse(paymentJSON);
       if (error) {
         toast.error(JSON.stringify(error));
       }

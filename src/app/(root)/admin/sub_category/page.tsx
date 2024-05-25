@@ -4,7 +4,7 @@ import AddNewSubCategory from "./_components/add-new-sub_category";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 
-export default async function CategoryPage() {
+export default async function SubCategoryPage() {
   const categories = getAllCategories();
   const subCategories = getAllSubCategories();
 
@@ -30,7 +30,7 @@ export default async function CategoryPage() {
       <Card>
         <CardHeader className="flex-row items-center justify-between py-4">
           <CardTitle className="text-xl">Sub Category</CardTitle>
-          <AddNewSubCategory categories={categoriesData} />
+          <AddNewSubCategory />
         </CardHeader>
         <CardContent>
           <DataTable columns={columns} data={subCategoriesData} />

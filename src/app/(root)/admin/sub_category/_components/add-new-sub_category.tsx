@@ -7,13 +7,7 @@ import { Tables } from "@/types/supabase";
 import { Plus } from "lucide-react";
 import SubCategoriesForm from "./sub-category-form";
 
-interface AddNewSubCategoryProps {
-  categories: Tables<"category">[] | null;
-}
-
-export default function AddNewSubCategory({
-  categories,
-}: AddNewSubCategoryProps) {
+export default function AddNewSubCategory() {
   const { setOpen } = useModal();
   return (
     <Button
@@ -22,7 +16,7 @@ export default function AddNewSubCategory({
       onClick={() =>
         setOpen(
           <CustomModal title={"Add Sub Category"}>
-            <SubCategoriesForm categories={categories} />
+            <SubCategoriesForm />
           </CustomModal>
         )
       }

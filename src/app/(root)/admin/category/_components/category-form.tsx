@@ -16,13 +16,15 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useEffect, useTransition } from "react";
 import { toast } from "sonner";
 
-import { createCategory } from "@/actions/supabase/supabase-db";
-import FileUploadImage from "@/components/fileUpload/FileUploadImage";
+import { createCategory, updateCategory } from "@/actions/supabase/supabase-db";
+import { deleteSupbaseImageFromAdmin } from "@/actions/supabase/supabase-image";
 import LoaderEl from "@/components/LoaderEl";
+import FileUploadImage from "@/components/fileUpload/FileUploadImage";
 import { useModal } from "@/providers/modal-provider";
+import { Tables } from "@/types/supabase";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -35,7 +37,11 @@ const formSchema = z.object({
 
 type FormSchema = z.infer<typeof formSchema>;
 
-export default function CategoriesForm() {
+interface CategoriesFormProps {
+  category: Tables<"category"> & { product: Tables<"product">[] };
+}
+
+export default function CategoriesForm({ category }: CategoriesFormProps) {
   const { setClose } = useModal();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -43,22 +49,51 @@ export default function CategoriesForm() {
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      image_url: "",
+      name: category?.name || "",
+      image_url: category?.image_url || "",
     },
   });
 
+  useEffect(
+    () =>
+      form.reset({
+        name: category?.name || "",
+        image_url: category?.image_url || "",
+      }),
+    []
+  );
+
   function onSubmit(values: FormSchema) {
-    startTransition(async () => {
-      const response = await createCategory(values);
-      const { _, error } = JSON.parse(response);
-      if (error) {
-        toast.error(JSON.stringify(error));
-      }
-      router.refresh();
-      form.reset();
-      setClose();
-    });
+    if (category && category.id) {
+      startTransition(async () => {
+        //
+        const existingImage = JSON.parse(category.image_url)[0].name;
+        await deleteSupbaseImageFromAdmin("categories/", existingImage);
+        const response = await updateCategory({
+          id: category.id,
+          name: values.name,
+          image_url: values.image_url,
+        });
+        const { _, error } = JSON.parse(response);
+        if (error) {
+          toast.error(JSON.stringify(error));
+        }
+        router.refresh();
+        form.reset();
+        setClose();
+      });
+    } else {
+      startTransition(async () => {
+        const response = await createCategory(values);
+        const { _, error } = JSON.parse(response);
+        if (error) {
+          toast.error(JSON.stringify(error));
+        }
+        router.refresh();
+        form.reset();
+        setClose();
+      });
+    }
   }
 
   return (
@@ -101,7 +136,7 @@ export default function CategoriesForm() {
 
         <Button type="submit" disabled={isPending} className="flex ml-auto">
           {isPending && <LoaderEl />}
-          Create category
+          {category && category.id ? "Update category" : "Create category"}
         </Button>
       </form>
     </Form>

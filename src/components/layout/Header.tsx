@@ -1,4 +1,3 @@
-import getUser from "@/lib/supabase-query";
 import SignOutButton from "../auth/SignOutButton";
 
 export default async function Header() {

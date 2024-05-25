@@ -16,7 +16,7 @@ import TableDeleteButton from "@/components/ui/table/table-delete-button";
 import dayMonthYearFormat from "@/lib/utils/format-date";
 import { Tables } from "@/types/supabase";
 import Image from "next/image";
-import EditCategory from "./_components/edit-category";
+import EditCategory from "./_components/edit-sub-category";
 
 export type SubCategory = Tables<"sub_category"> & {
   product: Tables<"product">[];
@@ -144,7 +144,7 @@ export const columns: ColumnDef<SubCategory>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <EditCategory />
+            <EditCategory subCategory={rowDataWhichisSubCategory} />
             <div className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 gap-2">
               <TableDeleteButton
                 deleteBy="sub_category"

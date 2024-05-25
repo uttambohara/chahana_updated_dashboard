@@ -45,8 +45,6 @@ export default function CreateFulfillment({
     });
   }
 
-  console.log(paidStatus);
-
   if (paidStatus)
     return (
       <Button

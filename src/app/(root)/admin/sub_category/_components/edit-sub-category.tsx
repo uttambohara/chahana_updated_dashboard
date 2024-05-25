@@ -3,8 +3,16 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useModal } from "@/providers/modal-provider";
 import { Edit2 } from "lucide-react";
 import CategoriesForm from "./sub-category-form";
+import { Tables } from "@/types/supabase";
+import SubCategoriesForm from "./sub-category-form";
 
-export default function EditCategory() {
+interface EditSubCategoryProps {
+  subCategory: Tables<"sub_category"> & {
+    category: Tables<"category"> | null;
+  };
+}
+
+export default function EditSubCategory({ subCategory }: EditSubCategoryProps) {
   const { setOpen } = useModal();
   return (
     <DropdownMenuItem
@@ -12,7 +20,7 @@ export default function EditCategory() {
       onClick={() =>
         setOpen(
           <CustomModal title={"Edit category"}>
-            <CategoriesForm categories={null} />
+            <SubCategoriesForm subCategory={subCategory} />
           </CustomModal>
         )
       }

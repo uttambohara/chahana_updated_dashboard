@@ -4,7 +4,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { createSubCategory } from "@/actions/supabase/supabase-db";
+import {
+  createSubCategory,
+  updateSubCategory,
+} from "@/actions/supabase/supabase-db";
 import LoaderEl from "@/components/LoaderEl";
 import FileUploadImage from "@/components/fileUpload/FileUploadImage";
 import { Button } from "@/components/ui/button";
@@ -27,8 +30,11 @@ import {
 import { useModal } from "@/providers/modal-provider";
 import { Tables } from "@/types/supabase";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { deleteSupbaseImageFromAdmin } from "@/actions/supabase/supabase-image";
+import { getAllCategories } from "@/lib/supabase-query";
+import { supabaseBrowserClient } from "@/lib/supabase/client";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -42,39 +48,87 @@ const formSchema = z.object({
 
 type FormSchema = z.infer<typeof formSchema>;
 
-interface SubCategoriesFormProps {
-  categories: Tables<"category">[] | null;
+interface subCategoryFormProps {
+  subCategory?: Tables<"sub_category"> & {
+    category: Tables<"category"> | null;
+  };
 }
 
-export default function SubCategoriesForm({
-  categories,
-}: SubCategoriesFormProps) {
+export default function subCategoryForm({ subCategory }: subCategoryFormProps) {
+  const [allCategories, setAllCategories] = useState<
+    Tables<"category">[] | null
+  >([]);
   const { setClose } = useModal();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
+  useEffect(() => {
+    (async () => {
+      const supabase = supabaseBrowserClient();
+      let { data: category, error } = await supabase
+        .from("category")
+        .select("*");
+
+      setAllCategories(category);
+    })();
+  }, []);
+
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      image_url: "",
+      name: subCategory?.name || "",
+      category_id: String(subCategory?.category_id) || "",
+      image_url: subCategory?.image_url || "",
     },
   });
 
+  useEffect(
+    () =>
+      form.reset({
+        name: subCategory?.name || "",
+        category_id: String(subCategory?.category_id) || "",
+        image_url: subCategory?.image_url || "",
+      }),
+    []
+  );
+
   function onSubmit(values: FormSchema) {
-    startTransition(async () => {
-      const response = await createSubCategory({
-        ...values,
-        category_id: Number(values.category_id),
+    if (subCategory && subCategory.id) {
+      //
+      startTransition(async () => {
+        //
+        const existingImage = JSON.parse(subCategory.image_url!)[0].name;
+
+        await deleteSupbaseImageFromAdmin("sub_categories/", existingImage);
+        const response = await updateSubCategory({
+          id: subCategory.id,
+          name: values.name,
+          category_id: Number(values.category_id),
+          image_url: values.image_url,
+        });
+        const { _, error } = JSON.parse(response);
+        if (error) {
+          toast.error(JSON.stringify(error));
+        }
+        router.refresh();
+        form.reset();
+        setClose();
       });
-      const { _, error } = JSON.parse(response);
-      if (error) {
-        toast.error(JSON.stringify(error));
-      }
-      router.refresh();
-      form.reset();
-      setClose();
-    });
+    } else {
+      startTransition(async () => {
+        const response = await createSubCategory({
+          ...values,
+          category_id: Number(values.category_id),
+        });
+        const { _, error } = JSON.parse(response);
+        if (error) {
+          toast.error(JSON.stringify(error));
+        }
+        router.refresh();
+        form.reset();
+        setClose();
+      });
+    }
   }
 
   return (
@@ -108,7 +162,7 @@ export default function SubCategoriesForm({
                     <SelectValue placeholder="Clothing.." />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories?.map((category) => (
+                    {allCategories?.map((category) => (
                       <SelectItem value={String(category.id)} key={category.id}>
                         {category.name}
                       </SelectItem>
@@ -143,7 +197,9 @@ export default function SubCategoriesForm({
         />
         <Button type="submit" disabled={isPending} className="flex ml-auto">
           {isPending && <LoaderEl />}
-          Create Sub Category
+          {subCategory && subCategory.id
+            ? "Update  Sub Category"
+            : "Create Sub Category"}
         </Button>
       </form>
     </Form>
