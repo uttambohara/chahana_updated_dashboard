@@ -117,6 +117,12 @@ export async function updateUserRole(newRole: string, userId: string) {
     .update({ role: newRole })
     .match({ id: userId });
 
+  const r = await supabase.auth.updateUser({
+    data: { role: newRole },
+  });
+
+  console.log(r);
+
   return JSON.stringify(response);
 }
 

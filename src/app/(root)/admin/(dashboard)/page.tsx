@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
+import getUser, {
   getAllCategories,
   getAllColors,
   getAllInvoices,
@@ -8,13 +8,12 @@ import {
   getAllSubCategories,
   getAllUsersForAdminDashboard,
 } from "@/lib/supabase-query";
-import firstLetterCapital from "@/lib/utils/first-letter-capital";
-import { formatCurrencyToNPR } from "@/lib/utils/format-currency";
 import {
   calculateRevenueTotal,
   calculateSummary,
 } from "../../vendor/_utils/revenue-calculation";
 import BarChartPayment from "./components/bar-chart-payment";
+import { redirect } from "next/navigation";
 
 export default async function Admin() {
   // Should use promise.all

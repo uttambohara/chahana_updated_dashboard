@@ -5,11 +5,11 @@ export default async function Home() {
   const { data: user } = await getUser();
 
   if (user?.role === "ADMIN") {
-    redirect("/admin");
+    return redirect("/admin");
   }
 
   if (user?.role === "VENDOR") {
-    redirect("/vendor");
+    return redirect("/vendor");
   }
-  return null;
+  return <div>Customer</div>;
 }
