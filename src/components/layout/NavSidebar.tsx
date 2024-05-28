@@ -4,6 +4,7 @@ import Link from "next/link";
 import CollapsibleNav from "./CollapsibleNav";
 import getUser from "@/lib/supabase-query";
 import { redirect } from "next/navigation";
+import NavListItem from "./NavListItem";
 
 export default async function NavSidebar() {
   const { data: user } = await getUser();
@@ -23,27 +24,7 @@ export default async function NavSidebar() {
         </Link>
       </div>
 
-      <nav className="px-4 py-6 text-sm h-full">
-        {NavList.map((listItem) => {
-          //...
-          // If sublist has items
-          if (listItem.subList.length > 0) {
-            return <CollapsibleNav listItem={listItem} key={listItem.id} />;
-          }
-
-          // otherwise,
-          return (
-            <Link
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-gray-900"
-              href={listItem.link}
-              key={listItem.id}
-            >
-              {listItem.icon}
-              {listItem.item}
-            </Link>
-          );
-        })}
-      </nav>
+      <NavListItem NavList={NavList} />
     </div>
   );
 }

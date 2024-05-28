@@ -93,3 +93,5 @@ export const VendorNavList = [
     subList: [],
   },
 ];
+
+export type NavListType = typeof AdminNavList;
