@@ -8,6 +8,7 @@ import {
   createSubCategory,
   updateSubCategory,
 } from "@/actions/supabase/supabase-db";
+import { deleteSupbaseImageFromAdmin } from "@/actions/supabase/supabase-image";
 import LoaderEl from "@/components/LoaderEl";
 import FileUploadImage from "@/components/fileUpload/FileUploadImage";
 import { Button } from "@/components/ui/button";
@@ -27,14 +28,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { supabaseBrowserClient } from "@/lib/supabase/client";
 import { useModal } from "@/providers/modal-provider";
 import { Tables } from "@/types/supabase";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { deleteSupbaseImageFromAdmin } from "@/actions/supabase/supabase-image";
-import { getAllCategories } from "@/lib/supabase-query";
-import { supabaseBrowserClient } from "@/lib/supabase/client";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -77,7 +76,6 @@ export default function SubCategoryForm({ subCategory }: SubCategoryFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: subCategory?.name || "",
-      category_id: String(subCategory?.category_id) || "",
       image_url: subCategory?.image_url || "",
     },
   });
