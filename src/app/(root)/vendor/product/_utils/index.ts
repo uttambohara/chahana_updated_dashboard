@@ -5,13 +5,10 @@ export function validateProductData(data: any) {
   const requiredFields = [
     "name",
     "description",
-    "sku",
     "salesPrice",
     "category_id",
     "sub_category_id",
-    "colors",
-    "sizes",
-    "quantity",
+    "variants",
     "productImgs",
   ]; // Replace with your actual required field names
 

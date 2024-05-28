@@ -5,7 +5,7 @@ import { Database } from "@/types/supabase";
 import { supabaseServerClient } from "@/lib/supabase/server";
 import { GetTasksSchema } from "./validation";
 
-export async function getAllCustomers(input: GetTasksSchema) {
+export async function getAllCustomers(input: GetTasksSchema, vendorId: string) {
   const { per_page, sort, from, to, start, end } = input;
   //
   const [column, order] = (sort?.split(".").filter(Boolean) ?? [
@@ -24,7 +24,8 @@ export async function getAllCustomers(input: GetTasksSchema) {
 
   let query = supabase
     .from("customer")
-    .select("*, order(*), users(*, order(*))");
+    .select("*, order(*), users(*, order(*))")
+    .eq("vendor_id", vendorId);
 
   // Filtering
   if (fromDay && toDay)
@@ -35,9 +36,8 @@ export async function getAllCustomers(input: GetTasksSchema) {
 
   const customersCountPromise = supabase
     .from("customer")
-    .select("*, order(*), users(*, order(*))", {
-      count: "exact",
-    });
+    .select("*, order(*), users(*, order(*))")
+    .eq("vendor_id", vendorId);
 
   const [countResponse, customersResponse] = await Promise.all([
     customersCountPromise,

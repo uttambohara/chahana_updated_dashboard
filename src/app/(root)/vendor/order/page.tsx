@@ -10,12 +10,17 @@ import { getAllOrders } from "./_lib/queries";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 import { searchParamsSchema } from "./_lib/validation";
+import getUser from "@/lib/supabase-query";
+import { redirect } from "next/navigation";
 
 export interface UserPageProps {
   searchParams: SearchParams;
 }
 
 export default async function OrderPage({ searchParams }: UserPageProps) {
+  const { data: user } = await getUser();
+  if (!user) redirect("/auth/login");
+
   // Parse the search parameters using the validation schema
   const search = searchParamsSchema.parse(searchParams);
 
@@ -24,11 +29,14 @@ export default async function OrderPage({ searchParams }: UserPageProps) {
   const end = start + search.per_page - 1;
 
   // backend
-  const { allOrders, orders, totalCount, error } = await getAllOrders({
-    ...search,
-    start,
-    end,
-  });
+  const { allOrders, orders, totalCount, error } = await getAllOrders(
+    {
+      ...search,
+      start,
+      end,
+    },
+    user.id
+  );
 
   if (error) return JSON.stringify(error);
 

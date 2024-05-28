@@ -4,7 +4,7 @@ import { Database } from "@/types/supabase";
 import { GetTasksSchema } from "./validations";
 import { supabaseServerClient } from "@/lib/supabase/server";
 
-export async function getAllProducts(input: GetTasksSchema) {
+export async function getAllProducts(input: GetTasksSchema, vendorId: string) {
   const { per_page, sort, from, to, start, end } = input;
   //
   const [column, order] = (sort?.split(".").filter(Boolean) ?? [
@@ -21,9 +21,12 @@ export async function getAllProducts(input: GetTasksSchema) {
 
   const supabase = supabaseServerClient();
 
-  let query = supabase.from("product").select(
-    "*, color(*), sizes(*), category(*), sub_category(*), product_color(*), product_size(*)" // Nested selects with aliases
-  );
+  let query = supabase
+    .from("product")
+    .select(
+      "*, color(*), sizes(*), category(*), sub_category(*), product_color(*), product_size(*), variants(*)" // Nested selects with aliases
+    )
+    .eq("user_id", vendorId);
 
   // Filtering
   if (fromDay && toDay)
@@ -35,11 +38,9 @@ export async function getAllProducts(input: GetTasksSchema) {
   const productsCountPromise = supabase
     .from("product")
     .select(
-      "*, color(*), sizes(*), category(*), sub_category(*), product_color(*), product_size(*)",
-      {
-        count: "exact",
-      }
-    );
+      "*, color(*), sizes(*), category(*), sub_category(*), product_color(*), product_size(*), variants(*)"
+    )
+    .eq("user_id", vendorId);
 
   const [countResponse, productsResponse] = await Promise.all([
     productsCountPromise,

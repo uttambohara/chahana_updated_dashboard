@@ -69,7 +69,7 @@ export default async function IndividialOrder({
   )?.id;
 
   return (
-    <div className="max-w-[1200px] mx-auto py-10 space-y-4">
+    <div className="max-w-[1150px] mx-auto py-10 space-y-4">
       <div>
         <Link
           href={`${VENDOR_ORDER_PARAM}`}
@@ -170,7 +170,6 @@ export default async function IndividialOrder({
                     </div>
                     <div className="space-y-1">
                       <div>{orderProduct?.name}</div>
-                      <div className="text-zinc-400">{orderProduct?.sku}</div>
                     </div>
                   </div>
                   <div className="text-muted-foreground flex items-center gap-6 justify-end">

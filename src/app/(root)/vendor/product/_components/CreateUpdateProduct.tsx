@@ -1,5 +1,3 @@
-import { CreateProductProvider } from "@/providers/create-product-provider";
-import { UploadImageProvider } from "@/providers/upload-image-provider";
 import { TProductWithCategorySubCategoryWithColorWithSizes } from "@/types";
 
 import getUser, {
@@ -8,15 +6,15 @@ import getUser, {
   getAllSizes,
   getAllSubCategories,
 } from "@/lib/supabase-query";
-import CreateNewProduct from "./CreateNewProduct";
 import { redirect } from "next/navigation";
+import CreateNewProduct from "./CreateNewProduct";
 import UpdateExistingProduct from "./UpdateExistingProduct";
 
 interface ProductProps {
   productBasedOnParamId?: TProductWithCategorySubCategoryWithColorWithSizes;
 }
 
-export default async function CreateProduct({
+export default async function CreateUpdateProduct({
   productBasedOnParamId,
 }: ProductProps) {
   const { data: user } = await getUser();

@@ -1,10 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { VENDOR_PRODUCT_PARAM } from "@/lib/constant";
-import { getProductById } from "@/lib/supabase-query";
-import { formatCurrencyToNPR } from "@/lib/utils/format-currency";
-import Image from "next/image";
-import Link from "next/link";
-import { notFound } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -14,6 +8,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { VENDOR_PRODUCT_PARAM } from "@/lib/constant";
+import {
+  getProductById,
+  getProductByIdWithVariantColorsAndSizes,
+} from "@/lib/supabase-query";
+import { formatCurrencyToNPR } from "@/lib/utils/format-currency";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 export default async function IndividialProduct({
   params,
@@ -22,7 +25,9 @@ export default async function IndividialProduct({
 }) {
   const productId = Number(params.id);
 
-  const { product, error } = await getProductById(productId);
+  const { product, error } = await getProductByIdWithVariantColorsAndSizes(
+    productId
+  );
 
   if (error) {
     return JSON.stringify(error);
@@ -64,16 +69,20 @@ export default async function IndividialProduct({
                   <h2 className="font-semibold">Details</h2>
                   <div className="text-muted-foreground mt-4 space-y-3 text-sm">
                     <div className="flex items-center justify-between">
-                      <div>SKU</div>
-                      <div>{productToDisplay.sku}</div>
-                    </div>
-                    <div className="flex items-center justify-between">
                       <div>Material</div>
                       <div>{productToDisplay.material || "-"}</div>
                     </div>
                     <div className="flex items-center justify-between">
                       <div>Discountables</div>
-                      <div>{productToDisplay.discountable || "-"}</div>
+                      <div>
+                        {productToDisplay.discountable ? (
+                          <div className="text-zinc-400">
+                            {productToDisplay.discountable.toString()}
+                          </div>
+                        ) : (
+                          "-"
+                        )}
+                      </div>
                     </div>
                     <div className="flex items-center justify-between">
                       <div>Category</div>
@@ -90,7 +99,7 @@ export default async function IndividialProduct({
                   <div className="text-muted-foreground mt-4 space-y-3 text-sm">
                     <div className="flex items-center justify-between">
                       <div>Price</div>
-                      <div className="font-semibold text-black">
+                      <div className="font-semibold text-black text-[1.1rem]">
                         {formatCurrencyToNPR(productToDisplay.salesPrice) ||
                           "-"}
                       </div>
@@ -141,29 +150,8 @@ export default async function IndividialProduct({
                     <div>
                       {" "}
                       {productToDisplay.weight
-                        ? `${productToDisplay.length} kg`
+                        ? `${productToDisplay.length} gm`
                         : "-"}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <h2 className="font-semibold">Dimensions</h2>
-                <div className="text-muted-foreground mt-4 space-y-3 text-sm">
-                  <div className="flex items-center justify-between">
-                    <div>Colors</div>
-                    <div>
-                      {productToDisplay.color.map((c) => (
-                        <span key={c.id}>{c.name}| </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>Sizes</div>
-                    <div>
-                      {productToDisplay.sizes.map((s) => (
-                        <span key={s.id}>{s.name}| </span>
-                      ))}
                     </div>
                   </div>
                 </div>
@@ -176,23 +164,32 @@ export default async function IndividialProduct({
             </CardHeader>
             <CardContent className="space-y-8">
               <div>
-                <Table>
+                <Table className="h-[20rem]">
+                  {productToDisplay.variants.length === 0 && (
+                    <TableCaption>Empty list</TableCaption>
+                  )}
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[100px]">Title</TableHead>
-                      <TableHead>SKU</TableHead>
-                      <TableHead>EAN</TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Color_SKU</TableHead>
                       <TableHead className="text-right">Inventory</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {productToDisplay.product_size.map((ps) => (
-                      <TableRow key={ps.product_id}>
-                        <TableCell>{ps.sizes?.code}</TableCell>
-                        <TableCell>{ps.sku}</TableCell>
-                        <TableCell>{ps.ean}</TableCell>
+                    {productToDisplay.variants.map((variant) => (
+                      <TableRow key={variant.id}>
+                        <TableCell className="flex gap-3">
+                          <div
+                            style={{ background: variant.color?.hex }}
+                            className="size-6 rounded-full"
+                          />
+                          {variant.color?.name}
+                        </TableCell>
+                        <TableCell className="text-zinc-400">
+                          {variant.color_sku}
+                        </TableCell>
                         <TableCell className="text-right">
-                          {ps.quantity}
+                          {variant.quantity}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -207,23 +204,32 @@ export default async function IndividialProduct({
             </CardHeader>
             <CardContent className="space-y-8">
               <div>
-                <Table>
+                <Table className="h-[20rem]">
+                  {productToDisplay.variants.length === 0 && (
+                    <TableCaption>Empty list</TableCaption>
+                  )}
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[100px]">Title</TableHead>
-                      <TableHead>SKU</TableHead>
-                      <TableHead>EAN</TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Size_SKU</TableHead>
                       <TableHead className="text-right">Inventory</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {productToDisplay.product_color.map((pc) => (
-                      <TableRow key={pc.product_id}>
-                        <TableCell>{pc.color?.name}</TableCell>
-                        <TableCell>{pc.sku}</TableCell>
-                        <TableCell>{pc.ean}</TableCell>
+                    {productToDisplay.variants.map((variant) => (
+                      <TableRow key={variant.product_id}>
+                        <TableCell>
+                          {variant.sizes?.name}
+                          <span className="text-zinc-400">
+                            | {variant.sizes?.code}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-zinc-400">
+                          {variant.size_sku}
+                        </TableCell>
+
                         <TableCell className="text-right">
-                          {pc.quantity}
+                          {variant.quantity}
                         </TableCell>
                       </TableRow>
                     ))}

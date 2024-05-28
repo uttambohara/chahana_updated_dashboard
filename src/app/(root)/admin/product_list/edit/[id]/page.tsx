@@ -1,10 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { VENDOR_PRODUCT_PARAM } from "@/lib/constant";
 import { getProductById } from "@/lib/supabase-query";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import CreateNewProduct from "../../_components/CreateNewProduct";
-import CreateProduct from "../../_components/CreateUpdateProduct";
-import { VENDOR_PRODUCT_PARAM } from "@/lib/constant";
+import CreateUpdateProduct from "../../_components/CreateUpdateProduct";
 
 export default async function UpdateProduct({
   params,
@@ -33,7 +31,7 @@ export default async function UpdateProduct({
 
         <Card>
           <CardContent>
-            <CreateProduct productBasedOnParamId={product} />
+            <CreateUpdateProduct productBasedOnParamId={product} />
           </CardContent>
         </Card>
       </div>

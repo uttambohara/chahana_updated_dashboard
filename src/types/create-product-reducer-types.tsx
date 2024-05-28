@@ -11,6 +11,7 @@ export type CreateProductAction =
         sub_category: Tables<"sub_category"> | null;
         colors: Tables<"color">[] | null;
         sizes: Tables<"sizes">[] | null;
+        variants: Tables<"variants">[] | null;
       };
     }
   | {
@@ -34,4 +35,25 @@ export type CreateProductAction =
     }
   | {
       type: "RESET";
+    }
+  | {
+      type: "CREATE_VARIANT";
+      payload: {
+        product_id?: string;
+        size_id: string;
+        color_id: string;
+        size_sku: string;
+        color_sku: string;
+        quantity: number;
+      };
+    }
+  | {
+      type: "INITIALIZE_VARIANT";
+      payload: {};
+    }
+  | {
+      type: "DELETE_VARIANT";
+      payload: {
+        variantIdToDelete: string;
+      };
     };

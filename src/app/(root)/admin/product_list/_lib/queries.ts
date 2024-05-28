@@ -22,7 +22,7 @@ export async function getAllProducts(input: GetTasksSchema) {
   const supabase = supabaseServerClient();
 
   let query = supabase.from("product").select(
-    "*, color(*), sizes(*), category(*), sub_category(*), product_color(*), product_size(*)" // Nested selects with aliases
+    "*, color(*), sizes(*), category(*), sub_category(*), product_color(*), product_size(*), variants(*)" // Nested selects with aliases
   );
 
   // Filtering
@@ -35,7 +35,7 @@ export async function getAllProducts(input: GetTasksSchema) {
   const productsCountPromise = supabase
     .from("product")
     .select(
-      "*, color(*), sizes(*), category(*), sub_category(*), product_color(*), product_size(*)",
+      "*, color(*), sizes(*), category(*), sub_category(*), product_color(*), product_size(*), variants(*)",
       {
         count: "exact",
       }

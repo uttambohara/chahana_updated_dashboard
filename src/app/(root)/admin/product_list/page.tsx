@@ -39,10 +39,7 @@ export default async function UserPage({ searchParams }: UserPageProps) {
   if (search.title) {
     filteredProducts = allProducts?.filter((product) => {
       const searchTerm = search.title || "";
-      return (
-        product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.sku?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      return product.name?.toLowerCase().includes(searchTerm.toLowerCase());
     });
   } else {
     filteredProducts = products; // Example: Show all users
@@ -70,7 +67,7 @@ export default async function UserPage({ searchParams }: UserPageProps) {
                 }
               />
               <TableSearchInput
-                filterBy={"name, SKU"}
+                filterBy={"name"}
                 urlPathParam={ADMIN_PRODUCT_PARAM}
               />
             </div>

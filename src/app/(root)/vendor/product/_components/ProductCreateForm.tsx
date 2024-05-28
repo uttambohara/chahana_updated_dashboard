@@ -1,6 +1,21 @@
 "use client";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 import FileUploadImage from "@/components/fileUpload/FileUploadImage";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -13,29 +28,43 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { useCreateProduct } from "@/providers/create-product-provider";
+import { useUploadImage } from "@/providers/upload-image-provider";
 import {
   CategoryWithSubCategory,
   TProductWithCategorySubCategoryWithColorWithSizes,
 } from "@/types";
 import { Tables } from "@/types/supabase";
-import { Check, FileCheck, Loader, Paperclip } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
-
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Switch } from "@/components/ui/switch";
+  CheckCheck,
+  FileCheck,
+  Loader,
+  Paperclip,
+  Plus,
+  Trash,
+  X,
+} from "lucide-react";
+import { ChangeEvent, Dispatch, SetStateAction, useState } from "react";
+import { UseFormReturn, useForm } from "react-hook-form";
+import { coerce, z } from "zod";
 import { FormSchema } from "./ProductForm";
 import ProductFormCategorySubCategoryComponent from "./ProductFormCategorySubCategoryComponent";
-import ProductFormColorComponent from "./ProductFormColorComponent";
-import ProductFormSizesComponent from "./ProductFormSizesComponent";
 import ProductImageUploadImgList from "./ProductImageUploadImgList";
-import { Dispatch, SetStateAction } from "react";
-import { useUploadImage } from "@/providers/upload-image-provider";
+
+const variantSchema = z.object({
+  product_id: z.string().min(2),
+  size_id: z.string(),
+  color_id: z.string(),
+  size_sku: z.string(),
+  color_sku: z.string(),
+  quantity: coerce.number(),
+});
+
+type VariantSchema = z.infer<typeof variantSchema>;
 
 interface ProductCreateFormProps {
   paramProductAlreadyExistCaseOfUpdate?: number | null | undefined;
@@ -50,12 +79,10 @@ interface ProductCreateFormProps {
   form: UseFormReturn<
     {
       name: string;
-      quantity: number;
       description: string;
       discountable: boolean;
       material: string;
       salesPrice: number;
-      sku: string;
       length?: number | undefined;
       height?: number | undefined;
       width?: number | undefined;
@@ -70,7 +97,7 @@ interface ProductCreateFormProps {
 }
 
 export default function ProductCreateForm({
-  form,
+  form: productForm,
   categories,
   subCategories,
   sizes,
@@ -81,13 +108,63 @@ export default function ProductCreateForm({
   isDraft,
   setIsDraft,
 }: ProductCreateFormProps) {
+  const [variantData, setVariantData] = useState({
+    quantity: 0,
+    color_id: "",
+    color_sku: "",
+    size_id: "",
+    size_sku: "",
+  });
+
+  const [submitted, setSubmitted] = useState<string[]>([]);
+  const [isFormVisible, setIsFormVisible] = useState(false);
   const { state: ImageState, dispatch: ImageDispatch } = useUploadImage();
+  const { state: VariantState, dispatch: VariantDispatch } = useCreateProduct();
+
+  const handleCreateButtonClick = () => {
+    setIsFormVisible(!isFormVisible);
+  };
+
+  function handleVariantSubmit() {
+    VariantDispatch({ type: "CREATE_VARIANT", payload: { ...variantData } });
+
+    setVariantData({
+      color_id: "",
+      color_sku: "",
+      size_id: "",
+      size_sku: "",
+      quantity: 0,
+    });
+    setSubmitted((prev) => [...prev, VariantState.selectedVariantId]);
+    setIsFormVisible(false);
+  }
+
+  const handleChange = (
+    event: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement>
+  ) => {
+    setVariantData((prevData) => ({
+      ...prevData,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
+  function dispatchInitialVariant() {
+    VariantDispatch({ type: "INITIALIZE_VARIANT", payload: {} });
+  }
+
+  function dispatchSetColor(color: Tables<"color">) {
+    VariantDispatch({ type: "SET_COLOR", payload: { color } });
+  }
+  function dispatchSetSize(size: Tables<"sizes">) {
+    VariantDispatch({ type: "SET_SIZE", payload: { size } });
+  }
+
   return (
     <Card className="border-none max-w-[750px] mx-auto">
       <CardContent>
-        <Form {...form}>
+        <Form {...productForm}>
           <form
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={productForm.handleSubmit(onSubmit)}
             className="space-y-4 p-4"
           >
             <Accordion type="multiple" defaultValue={["generalInformation"]}>
@@ -99,7 +176,7 @@ export default function ProductCreateForm({
                   <div>
                     <div className="flex flex-col items-center gap-x-[1.5rem] md:flex-row">
                       <FormField
-                        control={form.control}
+                        control={productForm.control}
                         name="name"
                         render={({ field }) => (
                           <FormItem className="w-[100%]">
@@ -114,19 +191,6 @@ export default function ProductCreateForm({
                           </FormItem>
                         )}
                       />
-                      <FormField
-                        control={form.control}
-                        name="sku"
-                        render={({ field }) => (
-                          <FormItem className="w-[100%]">
-                            <FormLabel>SKU*</FormLabel>
-                            <FormControl>
-                              <Input placeholder="S_K_U" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
                     </div>
                     <FormDescription className="mt-4 leading-8">
                       Give your product a short and a clear name. 50-60
@@ -134,53 +198,27 @@ export default function ProductCreateForm({
                     </FormDescription>
                   </div>
                   <div className="space-y-4">
-                    <div className="flex gap-x-[1.5rem]">
-                      <FormField
-                        control={form.control}
-                        name="material"
-                        render={({ field }) => (
-                          <FormItem className="w-full">
-                            <FormLabel>Material*</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="/100% cotton"
-                                {...field}
-                                onChange={(e) => {
-                                  field.onChange(e.target.value);
-                                }}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                            <FormDescription>
-                              This is a pitch of your product; keep it specific.
-                            </FormDescription>
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="quantity"
-                        render={({ field }) => (
-                          <FormItem className="w-2/3">
-                            <FormLabel>Quantity*</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="Quantity"
-                                {...field}
-                                type="number"
-                                onChange={(e) => {
-                                  field.onChange(e.target.value);
-                                }}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
                     <FormField
-                      control={form.control}
+                      control={productForm.control}
+                      name="material"
+                      render={({ field }) => (
+                        <FormItem className="w-1/2">
+                          <FormLabel>Material*</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="/100% cotton"
+                              {...field}
+                              onChange={(e) => {
+                                field.onChange(e.target.value);
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={productForm.control}
                       name="description"
                       render={({ field }) => (
                         <FormItem>
@@ -197,7 +235,7 @@ export default function ProductCreateForm({
                       )}
                     />
                     <FormField
-                      control={form.control}
+                      control={productForm.control}
                       name="discountable"
                       render={({ field }) => (
                         <FormItem className="w-full">
@@ -240,7 +278,7 @@ export default function ProductCreateForm({
                 <AccordionContent className="p-2 space-y-4 pb-[4rem]">
                   <div className="flex flex-col md:flex-row md:items-center gap-x-[1.5rem]">
                     <FormField
-                      control={form.control}
+                      control={productForm.control}
                       name="salesPrice"
                       render={({ field }) => (
                         <FormItem className="w-full">
@@ -260,7 +298,7 @@ export default function ProductCreateForm({
                       )}
                     />
                     <FormField
-                      control={form.control}
+                      control={productForm.control}
                       name="discount"
                       render={({ field }) => (
                         <FormItem className="w-full">
@@ -290,16 +328,177 @@ export default function ProductCreateForm({
                   Variants*
                 </AccordionTrigger>
                 <AccordionContent className="p-2 space-y-4 pb-[4rem]">
-                  <div className="flex flex-col gap-2 md:flex-row md:gap-12">
-                    <div className="w-[100%]">
-                      <FormLabel>Colors*</FormLabel>
-                      <ProductFormColorComponent colors={colors} />
+                  <Button
+                    variant={"link"}
+                    onClick={() => {
+                      if (isFormVisible) {
+                        return handleCreateButtonClick();
+                      }
+                      dispatchInitialVariant();
+                      handleCreateButtonClick();
+                    }}
+                    type="button"
+                    className="flex item-center gap-2"
+                  >
+                    {!isFormVisible && <Plus size={18} />}
+                    {isFormVisible && <X size={18} />}
+                    {isFormVisible ? "Close Form" : "Create New Variant"}
+                  </Button>
+                  {/*  */}
+                  {isFormVisible && (
+                    <div className="space-y-4">
+                      <div className="flex gap-4">
+                        <div className="space-y-1 w-full">
+                          <select
+                            id="color-id"
+                            name="color_id"
+                            value={variantData.color_id}
+                            onChange={handleChange}
+                            className="flex w-full rounded-md border border-input px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-zinc-450 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-zinc-50 text-zinc-500"
+                          >
+                            <option value="">Select Color</option>
+                            {/* Populate options dynamically based on your colors data */}
+                            {colors?.map((color) => (
+                              <option
+                                key={color.id}
+                                value={color.id}
+                                onClick={() => dispatchSetColor(color)}
+                              >
+                                {color.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="space-y-1 w-full">
+                          <Input
+                            type="text"
+                            id="color-sku"
+                            name="color_sku"
+                            value={variantData.color_sku}
+                            onChange={handleChange}
+                            placeholder="Color SKU"
+                          />
+                        </div>
+                        <div className="space-y-1 w-full">
+                          <select
+                            id="size-id"
+                            name="size_id"
+                            value={variantData.size_id}
+                            onChange={handleChange}
+                            className="flex h-10 w-full rounded-md border border-input px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-zinc-450 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-zinc-50 text-zinc-500"
+                          >
+                            <option value="">Select Size</option>
+                            {/* Populate options dynamically based on your sizes data */}
+                            {sizes?.map((size) => (
+                              <option
+                                key={size.id}
+                                value={size.id}
+                                onClick={() => dispatchSetSize(size)}
+                              >
+                                {size.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="space-y-1 w-full">
+                          <Input
+                            type="text"
+                            id="size-sku"
+                            name="size_sku"
+                            value={variantData.size_sku} // typo fixed: variantData.color_sku should be variantData.size_sku
+                            onChange={handleChange}
+                            placeholder="Size SKU"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1 w-1/3">
+                        <Input
+                          type="text"
+                          id="quantity"
+                          name="quantity"
+                          value={variantData.quantity}
+                          onChange={handleChange}
+                          placeholder="Quantity"
+                        />
+                      </div>
+                      <div className="flex items-center">
+                        <Button
+                          disabled={
+                            !variantData.color_id || !variantData.size_id
+                          }
+                          type="button"
+                          onClick={() => handleVariantSubmit()}
+                          className="mt-1 justify-start w-fit ml-auto"
+                        >
+                          <CheckCheck size={16} /> Add variation
+                        </Button>
+                      </div>
                     </div>
-                    <div className="w-[100%]">
-                      <FormLabel>Sizes*</FormLabel>
-                      <ProductFormSizesComponent sizes={sizes} />
-                    </div>
-                  </div>
+                  )}
+
+                  <Table className="h-[15rem]">
+                    {VariantState.variants.length === 0 && (
+                      <TableCaption>Empty list</TableCaption>
+                    )}
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Color</TableHead>
+                        <TableHead>Color_SKU</TableHead>
+                        <TableHead>Size</TableHead>
+                        <TableHead>Size_SKU</TableHead>
+                        <TableHead>Quantity</TableHead>
+                        <TableHead></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {VariantState.variants.length > 0 &&
+                        VariantState.variants.map((result, index) => {
+                          const color = colors?.find(
+                            (item) => item.id === result.color_id
+                          );
+                          const size = sizes?.find(
+                            (item) => item.id === result.size_id
+                          );
+
+                          return (
+                            <TableRow key={result.id}>
+                              <TableCell className="flex items-center gap-3">
+                                <div
+                                  style={{ background: color?.hex }}
+                                  className="size-6 rounded-full"
+                                />
+                                <div>{color?.name}</div>
+                              </TableCell>
+                              <TableCell className="text-zinc-400">
+                                {" "}
+                                {result.color_sku}
+                              </TableCell>
+                              <TableCell>{size?.name}</TableCell>
+                              <TableCell className="text-zinc-400">
+                                {result.size_sku}
+                              </TableCell>
+                              <TableCell>{result.quantity}</TableCell>
+                              <TableCell>
+                                <Trash
+                                  size={16}
+                                  color="red"
+                                  className="hover:bg-zinc-100 cursor-pointer"
+                                  onClick={() =>
+                                    VariantDispatch({
+                                      type: "DELETE_VARIANT",
+                                      payload: {
+                                        variantIdToDelete: result.id as string,
+                                      },
+                                    })
+                                  }
+                                />
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                    </TableBody>
+                  </Table>
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="dimensions">
@@ -312,11 +511,11 @@ export default function ProductCreateForm({
                   </div>
                   <div className="flex gap-3 flex-col md:flex-row">
                     <FormField
-                      control={form.control}
+                      control={productForm.control}
                       name="width"
                       render={({ field }) => (
                         <FormItem className="w-full">
-                          <FormLabel>Width</FormLabel>
+                          <FormLabel>Width in cm</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
@@ -332,11 +531,11 @@ export default function ProductCreateForm({
                       )}
                     />
                     <FormField
-                      control={form.control}
+                      control={productForm.control}
                       name="length"
                       render={({ field }) => (
                         <FormItem className="w-full">
-                          <FormLabel>Length</FormLabel>
+                          <FormLabel>Length in cm</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
@@ -352,11 +551,11 @@ export default function ProductCreateForm({
                       )}
                     />
                     <FormField
-                      control={form.control}
+                      control={productForm.control}
                       name="height"
                       render={({ field }) => (
                         <FormItem className="w-full">
-                          <FormLabel>Height</FormLabel>
+                          <FormLabel>Height in cm</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
@@ -372,11 +571,11 @@ export default function ProductCreateForm({
                       )}
                     />
                     <FormField
-                      control={form.control}
+                      control={productForm.control}
                       name="weight"
                       render={({ field }) => (
                         <FormItem className="w-full">
-                          <FormLabel>Weight</FormLabel>
+                          <FormLabel>Weight in gm</FormLabel>
                           <FormControl>
                             <Input
                               type="number"

@@ -1,10 +1,8 @@
 "use client";
 
 import {
-  deleteEverythingFromProductColorRelationIfProductIdMatches,
-  deleteEverythingFromProductSizeRelationIfProductIdMatches,
-  insertInProductColorRelation,
-  insertInProductSizeRelation,
+  deleteVariantBasedOnProductId,
+  insertInVariant,
   upsertProduct,
 } from "@/actions/supabase/supabase-db";
 import { useCreateProduct } from "@/providers/create-product-provider";
@@ -44,9 +42,6 @@ const formSchema = z.object({
     message: "Material must be at least 2 characters.",
   }),
   discountable: z.boolean().default(true),
-  sku: z.string().min(2, {
-    message: "SKU must be at least 2 characters.",
-  }),
   description: z.string().min(2, {
     message: "Description must be at least 2 characters.",
   }),
@@ -58,14 +53,6 @@ const formSchema = z.object({
   height: coerce.number().optional(),
   length: coerce.number().optional(),
   weight: coerce.number().optional(),
-  quantity: coerce
-    .number()
-    .positive({
-      message: "Quantity must be greater than 0",
-    })
-    .refine((value) => String(value).length <= 2, {
-      message: "Quantity must be a 1 or 2 digit number",
-    }),
 });
 
 export type FormSchema = z.infer<typeof formSchema>;
@@ -93,11 +80,9 @@ export function ProductForm({
     defaultValues: {
       name: "",
       material: "",
-      quantity: 0,
       description: "",
       salesPrice: 0,
       discount: 0,
-      sku: "",
       discountable: false,
       height: 0,
       width: 0,
@@ -117,10 +102,10 @@ export function ProductForm({
     CreateProductDispatch,
     ImageDispatch,
   });
-
+  console.log(CreateProductState.variants);
   // Handle form submit
   async function onSubmit(values: FormSchema) {
-    const { category, sub_category, colors, sizes } = CreateProductState;
+    const { category, sub_category, variants } = CreateProductState;
     const { productImgs } = ImageState;
 
     // Data prep
@@ -144,8 +129,9 @@ export function ProductForm({
       category_id: category?.id as number,
       sub_category_id: sub_category?.id as number,
       productImgs,
-      colors,
-      sizes,
+      variants: variants.filter(
+        (variant) => variant.color_id && variant.size_id
+      ),
     };
 
     const errors = validateProductData(checkData);
@@ -166,47 +152,45 @@ export function ProductForm({
 
       // 1)
       if (!paramProductAlreadyExistCaseOfUpdate) {
-        // product_color
-        // product_size
-        const mapAllColorsFromFormForInsertionInProductColor = colors.map(
-          (color) =>
-            insertInProductColorRelation(productIdFromPOSTresponse, color.id)
-        );
-        const mapAllSizesFromFormForInsertionInProductSize = sizes.map((size) =>
-          insertInProductSizeRelation(productIdFromPOSTresponse, size.id)
-        );
-        const allSizesAndColors = [
-          ...mapAllColorsFromFormForInsertionInProductColor,
-          ...mapAllSizesFromFormForInsertionInProductSize,
-        ];
-        await Promise.all(allSizesAndColors);
+        const mapAllVariantContent = variants
+          .filter((variant) => variant.color_id && variant.size_id)
+          .map((variant) => {
+            const finalVariant = {
+              ...variant,
+              product_id: productIdFromPOSTresponse,
+            };
+
+            return insertInVariant(finalVariant);
+          });
+
+        await Promise.all(mapAllVariantContent);
       }
 
       // 2)
       if (paramProductAlreadyExistCaseOfUpdate) {
-        // Delete everything from the previous entry / clear
-        await Promise.all([
-          deleteEverythingFromProductSizeRelationIfProductIdMatches(
-            productBasedOnParamId[0].id
-          ),
-          deleteEverythingFromProductColorRelationIfProductIdMatches(
-            productBasedOnParamId[0].id
-          ),
-        ]);
+        const filteredVariants = variants.filter(
+          (variant) => variant.color_id && variant.size_id
+        ); // Filter valid variants
 
-        // Insert everything anew from the preserved client side state
-        const mapAllColorsFromFormForInsertionInProductColor = colors.map(
-          (color) =>
-            insertInProductColorRelation(productBasedOnParamId[0].id, color.id)
-        );
-        const mapAllSizesFromFormForInsertionInProductSize = sizes.map((size) =>
-          insertInProductSizeRelation(productBasedOnParamId[0].id, size.id)
-        );
-        const allSizesAndColors = [
-          ...mapAllColorsFromFormForInsertionInProductColor,
-          ...mapAllSizesFromFormForInsertionInProductSize,
-        ];
-        await Promise.all(allSizesAndColors);
+        console.log(filteredVariants);
+        console.log({ variants });
+        try {
+          await deleteVariantBasedOnProductId(productBasedOnParamId[0].id); // Remove existing variants (if applicable)
+
+          const updatePromises = filteredVariants.map(async (variant) => {
+            const finalVariant = {
+              ...variant,
+              product_id: productBasedOnParamId[0].id,
+            };
+            insertInVariant(finalVariant); // Update or insert each variant asynchronously
+          });
+
+          const response = await Promise.all(updatePromises); // Wait for all variant updates to finish
+          console.log(response);
+          console.log({ variants: filteredVariants }); // Log updated variants (optional)
+        } catch (error) {
+          console.error("Error updating variants:", error); // Log errors gracefully
+        }
       }
 
       // Reset

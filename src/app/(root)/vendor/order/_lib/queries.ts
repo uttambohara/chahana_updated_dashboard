@@ -5,7 +5,7 @@ import { Database } from "@/types/supabase";
 import { supabaseServerClient } from "@/lib/supabase/server";
 import { GetTasksSchema } from "./validation";
 
-export async function getAllOrders(input: GetTasksSchema) {
+export async function getAllOrders(input: GetTasksSchema, vendorId: string) {
   const { per_page, sort, from, to, start, end } = input;
   //
   const [column, order] = (sort?.split(".").filter(Boolean) ?? [
@@ -31,7 +31,10 @@ export async function getAllOrders(input: GetTasksSchema) {
   // Filtering
   if (fromDay && toDay)
     query = query.gte("created_at", fromDay).lte("created_at", toDay);
-  if (order) query = query.order(column, { ascending: order === "asc" });
+  if (order)
+    query = query
+      .order(column, { ascending: order === "asc" })
+      .eq("vendor_id", vendorId);
 
   if (start && end) query = query.range(start, end);
 
@@ -42,7 +45,8 @@ export async function getAllOrders(input: GetTasksSchema) {
       {
         count: "exact",
       }
-    );
+    )
+    .eq("vendor_id", vendorId);
 
   const [countResponse, ordersResponse] = await Promise.all([
     ordersCountPromise,

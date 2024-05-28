@@ -14,6 +14,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableCaption,
 } from "@/components/ui/table";
 import TableRowCustomer from "./_components/TableRowCustomer";
 
@@ -86,6 +87,9 @@ export default async function IndividualUser({
 
             <CardContent>
               <Table>
+                {customerToDisplay?.order.length === 0 && (
+                  <TableCaption>The order list is empty.</TableCaption>
+                )}
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[15px]"></TableHead>

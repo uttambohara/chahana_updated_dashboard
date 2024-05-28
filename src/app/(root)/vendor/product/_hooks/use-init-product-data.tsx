@@ -12,12 +12,10 @@ interface UseInitProductDataProps {
   form: UseFormReturn<
     {
       name: string;
-      quantity: number;
       description: string;
       discountable: boolean;
       material: string;
       salesPrice: number;
-      sku: string;
       length?: number | undefined;
       height?: number | undefined;
       width?: number | undefined;
@@ -46,12 +44,10 @@ export default function useInitProductData({
         name: productBasedOnParamIdObject.name,
         material: productBasedOnParamIdObject.material,
         discountable: productBasedOnParamIdObject.discountable || false,
-        sku: productBasedOnParamIdObject.sku,
         length: productBasedOnParamIdObject.length || 0,
         width: productBasedOnParamIdObject.width || 0,
         height: productBasedOnParamIdObject.height || 0,
         weight: productBasedOnParamIdObject.weight || 0,
-        quantity: productBasedOnParamIdObject.quantity,
         description: productBasedOnParamIdObject.description,
         salesPrice: productBasedOnParamIdObject.salesPrice,
         discount: productBasedOnParamIdObject.discount || 0,
@@ -65,6 +61,7 @@ export default function useInitProductData({
           sub_category: productBasedOnParamIdObject.sub_category,
           colors: productBasedOnParamIdObject.color,
           sizes: productBasedOnParamIdObject.sizes,
+          variants: productBasedOnParamIdObject.variants,
         },
       });
       ImageDispatch({

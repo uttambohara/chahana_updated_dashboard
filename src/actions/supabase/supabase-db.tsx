@@ -243,6 +243,21 @@ export async function insertInProductColorRelation(
     .insert({ product_id, color_id });
   return JSON.stringify(response);
 }
+export async function deleteVariantBasedOnProductId(productId: number) {
+  const supabase = supabaseServerClient();
+  const response = await supabase
+    .from("variants")
+    .delete()
+    .eq("product_id", productId);
+  return JSON.stringify(response);
+}
+
+export async function insertInVariant(variant: Partial<Tables<"variants">>) {
+  const supabase = supabaseServerClient();
+  const response = await supabase.from("variants").insert({ ...variant });
+  console.log({ response });
+  return JSON.stringify(response);
+}
 
 export async function insertInProductSizeRelation(
   product_id: number,

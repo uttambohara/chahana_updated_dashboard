@@ -11,28 +11,6 @@ export type Products = TProductWithCategorySubColorAndSizes;
 
 export const columns: ColumnDef<Products>[] = [
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
     accessorKey: "name",
     header: "Name",
     cell: ({ row }) => {
@@ -92,7 +70,7 @@ export const columns: ColumnDef<Products>[] = [
     header: "Inventory",
     cell: ({ row }) => {
       const rowWhichIsProduct = row.original;
-      const totalQuantity = rowWhichIsProduct.product_size
+      const totalQuantity = rowWhichIsProduct.variants
         .filter((p) => p.product_id === rowWhichIsProduct.id)
         .reduce((acc, item) => acc + item.quantity!, 0);
 

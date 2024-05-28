@@ -77,16 +77,19 @@ export type Database = {
           created_at: string
           id: number
           user_id: string | null
+          vendor_id: string | null
         }
         Insert: {
           created_at?: string
           id?: number
           user_id?: string | null
+          vendor_id?: string | null
         }
         Update: {
           created_at?: string
           id?: number
           user_id?: string | null
+          vendor_id?: string | null
         }
         Relationships: [
           {
@@ -95,6 +98,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -305,9 +315,7 @@ export type Database = {
           material: string
           name: string
           productImgs: string
-          quantity: number
           salesPrice: number
-          sku: string
           status: Database["public"]["Enums"]["create_product_status"]
           sub_category_id: number
           user_id: string
@@ -326,9 +334,7 @@ export type Database = {
           material: string
           name: string
           productImgs: string
-          quantity: number
           salesPrice: number
-          sku: string
           status?: Database["public"]["Enums"]["create_product_status"]
           sub_category_id: number
           user_id: string
@@ -347,9 +353,7 @@ export type Database = {
           material?: string
           name?: string
           productImgs?: string
-          quantity?: number
           salesPrice?: number
-          sku?: string
           status?: Database["public"]["Enums"]["create_product_status"]
           sub_category_id?: number
           user_id?: string
@@ -555,6 +559,84 @@ export type Database = {
           {
             foreignKeyName: "users_id_fkey"
             columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      variants: {
+        Row: {
+          color_id: number | null
+          color_sku: string | null
+          created_at: string
+          id: string
+          product_id: number | null
+          quantity: number | null
+          size_id: number | null
+          size_sku: string | null
+        }
+        Insert: {
+          color_id?: number | null
+          color_sku?: string | null
+          created_at?: string
+          id?: string
+          product_id?: number | null
+          quantity?: number | null
+          size_id?: number | null
+          size_sku?: string | null
+        }
+        Update: {
+          color_id?: number | null
+          color_sku?: string | null
+          created_at?: string
+          id?: string
+          product_id?: number | null
+          quantity?: number | null
+          size_id?: number | null
+          size_sku?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "variant_color_id_fkey"
+            columns: ["color_id"]
+            isOneToOne: false
+            referencedRelation: "color"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "variant_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "product"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "variant_size_id_fkey"
+            columns: ["size_id"]
+            isOneToOne: false
+            referencedRelation: "sizes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]

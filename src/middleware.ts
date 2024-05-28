@@ -10,6 +10,8 @@ import { updateSession } from "./lib/supabase/middleware";
 
 export async function middleware(request: NextRequest) {
   const user = await supabaseGetUser();
+  const userRole = user?.user_metadata.role;
+
   const isLoggedIn = user;
   const { nextUrl } = request;
 
@@ -19,6 +21,15 @@ export async function middleware(request: NextRequest) {
 
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+  //
+
+  if (userRole === "ADMIN") {
+    // Authorized admin access
+    return NextResponse.next();
+  } else if (userRole === "VENDOR" && nextUrl.pathname.startsWith("/admin")) {
+    // Redirect vendor trying to access admin routes to /vendor
+    return NextResponse.redirect(new URL("/vendor", request.url));
+  }
 
   if (isAPIAuthRoute) return null;
 

@@ -12,12 +12,16 @@ import { getAllProducts } from "./_lib/queries";
 import { searchParamsSchema } from "./_lib/validations";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
+import getUser from "@/lib/supabase-query";
+import { redirect } from "next/navigation";
 
 export interface UserPageProps {
   searchParams: SearchParams;
 }
 
 export default async function UserPage({ searchParams }: UserPageProps) {
+  const { data: user } = await getUser();
+  if (!user) redirect("/auth/login");
   // Parse the search parameters using the validation schema
   const search = searchParamsSchema.parse(searchParams);
 
@@ -26,11 +30,14 @@ export default async function UserPage({ searchParams }: UserPageProps) {
   const end = start + search.per_page - 1;
 
   // backend
-  const { allProducts, products, totalCount, error } = await getAllProducts({
-    ...search,
-    start,
-    end,
-  });
+  const { allProducts, products, totalCount, error } = await getAllProducts(
+    {
+      ...search,
+      start,
+      end,
+    },
+    user?.id
+  );
 
   if (error) return JSON.stringify(error);
 
@@ -39,10 +46,7 @@ export default async function UserPage({ searchParams }: UserPageProps) {
   if (search.title) {
     filteredProducts = allProducts?.filter((product) => {
       const searchTerm = search.title || "";
-      return (
-        product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.sku?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      return product.name?.toLowerCase().includes(searchTerm.toLowerCase());
     });
   } else {
     filteredProducts = products; // Example: Show all users
@@ -70,7 +74,7 @@ export default async function UserPage({ searchParams }: UserPageProps) {
                 }
               />
               <TableSearchInput
-                filterBy={"name, SKU"}
+                filterBy={"name"}
                 urlPathParam={VENDOR_PRODUCT_PARAM}
               />
             </div>
