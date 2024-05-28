@@ -26,11 +26,9 @@ export default function ProductFormColorComponent({
         <li
           key={color.id}
           onClick={() => handleUpdateColorDispatch(color)}
-          className={clsx("cursor-pointer", {
-            "rounded-md ring ring-gray-400 ring-offset-2": state.colors?.some(
-              (item: { id: number }) => item.id === color.id
-            ),
-          })}
+          className={clsx(
+            "cursor-pointer rounded-md ring ring-gray-400 ring-offset-2"
+          )}
         >
           <div
             key={color.id}

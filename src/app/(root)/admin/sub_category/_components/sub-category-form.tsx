@@ -48,13 +48,13 @@ const formSchema = z.object({
 
 type FormSchema = z.infer<typeof formSchema>;
 
-interface subCategoryFormProps {
+interface SubCategoryFormProps {
   subCategory?: Tables<"sub_category"> & {
     category: Tables<"category"> | null;
   };
 }
 
-export default function subCategoryForm({ subCategory }: subCategoryFormProps) {
+export default function SubCategoryForm({ subCategory }: SubCategoryFormProps) {
   const [allCategories, setAllCategories] = useState<
     Tables<"category">[] | null
   >([]);

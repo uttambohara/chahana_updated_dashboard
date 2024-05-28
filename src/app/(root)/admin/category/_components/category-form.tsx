@@ -38,7 +38,7 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>;
 
 interface CategoriesFormProps {
-  category: Tables<"category"> & { product: Tables<"product">[] };
+  category?: Tables<"category"> & { product: Tables<"product">[] };
 }
 
 export default function CategoriesForm({ category }: CategoriesFormProps) {

@@ -28,12 +28,8 @@ export default function ProductFormSizesComponent({
           onClick={() => handleUpdateSizeDispatch(size)}
           key={size.id}
           className={clsx(
-            `grid place-content-center size-6 cursor-pointer p-3 text-muted-foreground`,
-            {
-              "ring ring-gray-500 ring-offset-2": state.sizes?.some(
-                (item: { id: number }) => item.id === size.id
-              ),
-            }
+            `grid place-content-center size-6 cursor-pointer p-3 text-muted-foreground
+            ring ring-gray-500 ring-offset-2`
           )}
         >
           {size.code}
