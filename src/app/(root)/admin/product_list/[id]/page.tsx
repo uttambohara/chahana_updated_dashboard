@@ -43,7 +43,7 @@ export default async function IndividialProduct({
     <div className="max-w-[1200px] mx-auto py-10 space-y-4">
       <div>
         <Link
-          href={`${VENDOR_PRODUCT_PARAM}`}
+          href={`${ADMIN_PRODUCT_PARAM}`}
           className="font-semibold text-sm text-muted-foreground ml-3 hover:text-black"
         >
           &larr; Back to products
